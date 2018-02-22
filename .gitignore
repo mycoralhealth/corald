@@ -1,0 +1,6 @@
+mycoral.db*
+*.swp
+/mycoral-patient-server
+.DS_Store
+.env
+*.bak
