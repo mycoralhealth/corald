@@ -1,4 +1,4 @@
-## Coral Health Demo Server
+## corald - Coral Health Demo Server
 
 This is the server that corresponds to the Coral Health Patient App.
 
