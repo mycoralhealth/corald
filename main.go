@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mycoralhealth/mycoral-patient-server/web"
+	"github.com/mycoralhealth/corald/web"
 
 	"database/sql"
 
@@ -12,17 +12,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func init() {
-
+func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-}
-
-func main() {
-	dbPath := os.Getenv("MYCORAL_DB")
+	dbPath := os.Getenv("CORALD_DB")
 	log.Printf("Opening database %s", dbPath)
 
 	dbCon, err := sql.Open("sqlite3", dbPath)

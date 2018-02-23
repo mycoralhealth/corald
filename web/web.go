@@ -47,8 +47,8 @@ func MakeMuxRouter(dbCon *sql.DB) http.Handler {
 	}
 
 	muxRouter := mux.NewRouter()
-	//muxRouter.HandleFunc("/login", handleLogin).Methods("GET")
-	//muxRouter.HandleFunc("/callback", CallbackHandler)
+	muxRouter.HandleFunc("/session", wrap(handleSession)).Methods("GET")
+
 	muxRouter.HandleFunc("/users", appendSlash).Methods("GET")
 	muxRouter.HandleFunc("/users/", wrap(handleGetAllUsers)).Methods("GET")
 	muxRouter.HandleFunc("/users/", wrap(handleCreateUser)).Methods("POST")
@@ -62,7 +62,7 @@ func MakeMuxRouter(dbCon *sql.DB) http.Handler {
 // Run starts server and app
 func Run(dbCon *sql.DB) error {
 
-	httpAddr := os.Getenv("MYCORAL_ADDR")
+	httpAddr := os.Getenv("CORALD_ADDR")
 
 	mux := MakeMuxRouter(dbCon)
 

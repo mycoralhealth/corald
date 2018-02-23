@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/mycoralhealth/mycoral-patient-server/db"
+	"github.com/mycoralhealth/corald/db"
 
 	"github.com/gorilla/mux"
 )

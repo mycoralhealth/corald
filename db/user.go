@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 
-	"github.com/mycoralhealth/mycoral-patient-server/model"
+	"github.com/mycoralhealth/corald/model"
 )
 
 // GetConstituent returns info for a single canstituent
