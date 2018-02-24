@@ -47,14 +47,14 @@ func MakeMuxRouter(dbCon *sql.DB) http.Handler {
 	}
 
 	muxRouter := mux.NewRouter()
-	muxRouter.HandleFunc("/session", wrap(handleSession)).Methods("GET")
+	muxRouter.HandleFunc("/v0/session", wrap(handleSession)).Methods("GET")
 
-	muxRouter.HandleFunc("/users", appendSlash).Methods("GET")
-	muxRouter.HandleFunc("/users/", wrap(handleGetAllUsers)).Methods("GET")
-	muxRouter.HandleFunc("/users/", wrap(handleCreateUser)).Methods("POST")
-	muxRouter.HandleFunc("/users/{username}", wrap(handleGetUser)).Methods("GET")
-	muxRouter.HandleFunc("/users/{username}", wrap(handleUpdateUser)).Methods("PUT")
-	muxRouter.HandleFunc("/users/{username}", wrap(handleDeleteUser)).Methods("DELETE")
+	muxRouter.HandleFunc("/v0/users", appendSlash).Methods("GET")
+	muxRouter.HandleFunc("/v0/users/", wrap(handleGetAllUsers)).Methods("GET")
+	muxRouter.HandleFunc("/v0/users/", wrap(handleCreateUser)).Methods("POST")
+	muxRouter.HandleFunc("/v0/users/{username}", wrap(handleGetUser)).Methods("GET")
+	muxRouter.HandleFunc("/v0/users/{username}", wrap(handleUpdateUser)).Methods("PUT")
+	muxRouter.HandleFunc("/v0/users/{username}", wrap(handleDeleteUser)).Methods("DELETE")
 	muxRouter.HandleFunc("/{any:.*}", handleNotFound)
 	return muxRouter
 }
