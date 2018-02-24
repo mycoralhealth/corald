@@ -14,7 +14,8 @@ env:
     - REPO=mycoralhealth/corald
 
 after_success:
-  - go build
+  - go build -ldflags "-linkmode external -extldflags -static"
+  - ldd corald
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - cp /etc/ssl/certs/ca-certificates.crt .
   - docker build -f Dockerfile -t $REPO:$COMMIT .
