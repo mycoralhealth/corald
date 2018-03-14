@@ -1,7 +1,6 @@
 package web
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"net/url"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 func handleNotFound(w http.ResponseWriter, r *http.Request) {
@@ -34,10 +34,10 @@ func appendSlash(w http.ResponseWriter, r *http.Request) {
 }
 
 // MakeMuxRouter defines and creates routes
-func MakeMuxRouter(dbCon *sql.DB) http.Handler {
+func MakeMuxRouter(dbCon *gorm.DB) http.Handler {
 
 	// Wrapper to add dbCon to handler functions
-	wrap := func(f func(w http.ResponseWriter, r *http.Request, dbCon *sql.DB)) func(w http.ResponseWriter, r *http.Request) {
+	wrap := func(f func(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB)) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
 			/*if err := checkLoggedIn(w, r); err != nil {
 				return
@@ -52,15 +52,15 @@ func MakeMuxRouter(dbCon *sql.DB) http.Handler {
 	muxRouter.HandleFunc("/v0/users", appendSlash).Methods("GET")
 	muxRouter.HandleFunc("/v0/users/", wrap(handleGetAllUsers)).Methods("GET")
 	muxRouter.HandleFunc("/v0/users/", wrap(handleCreateUser)).Methods("POST")
-	muxRouter.HandleFunc("/v0/users/{username}", wrap(handleGetUser)).Methods("GET")
-	muxRouter.HandleFunc("/v0/users/{username}", wrap(handleUpdateUser)).Methods("PUT")
-	muxRouter.HandleFunc("/v0/users/{username}", wrap(handleDeleteUser)).Methods("DELETE")
+	muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleGetUser)).Methods("GET")
+	muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleUpdateUser)).Methods("PUT")
+	muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleDeleteUser)).Methods("DELETE")
 	muxRouter.HandleFunc("/{any:.*}", handleNotFound)
 	return muxRouter
 }
 
 // Run starts server and app
-func Run(dbCon *sql.DB) error {
+func Run(dbCon *gorm.DB) error {
 
 	httpAddr := os.Getenv("CORALD_ADDR")
 

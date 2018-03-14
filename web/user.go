@@ -1,24 +1,32 @@
 package web
 
 import (
-	"database/sql"
 	"net/http"
+	"strconv"
 
-	"github.com/mycoralhealth/corald/db"
+	"github.com/jinzhu/gorm"
+	"github.com/mycoralhealth/corald/model"
 
 	"github.com/gorilla/mux"
 )
 
-func handleGetAllUsers(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
+func handleGetAllUsers(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }
 
-func handleGetUser(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
-	vars := mux.Vars(r)
-	username := vars["username"]
+func handleGetUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
+	//FIXME: This should not be a public endpoint
 
-	user, err := db.GetUser(dbCon, username)
-	if err == sql.ErrNoRows {
+	vars := mux.Vars(r)
+	userid, err := strconv.Atoi(vars["userid"])
+	if err != nil {
+		handleError(w, r, http.StatusNotFound, err.Error())
+		return
+	}
+
+	var user model.User
+	err = dbCon.First(&user, userid).Error
+	if gorm.IsRecordNotFoundError(err) {
 		handleError(w, r, http.StatusNotFound, err.Error())
 		return
 	}
@@ -30,14 +38,14 @@ func handleGetUser(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
 	respondWithJSON(w, r, http.StatusOK, user)
 }
 
-func handleCreateUser(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
+func handleCreateUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }
 
-func handleDeleteUser(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
+func handleDeleteUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }
 
-func handleUpdateUser(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
+func handleUpdateUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }

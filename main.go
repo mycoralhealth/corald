@@ -4,12 +4,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
+	"github.com/mycoralhealth/corald/model"
 	"github.com/mycoralhealth/corald/web"
 
-	"database/sql"
-
-	"github.com/joho/godotenv"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 func main() {
@@ -21,11 +21,14 @@ func main() {
 	dbPath := os.Getenv("CORALD_DB")
 	log.Printf("Opening database %s", dbPath)
 
-	dbCon, err := sql.Open("sqlite3", dbPath)
+	dbCon, err := gorm.Open("sqlite3", dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer dbCon.Close()
+
+	dbCon.AutoMigrate(&model.User{})
+	dbCon.Debug()
 
 	log.Fatal(web.Run(dbCon))
 }

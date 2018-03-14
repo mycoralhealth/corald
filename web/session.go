@@ -1,16 +1,18 @@
 package web
 
 import (
-	"database/sql"
 	"net/http"
+	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/mycoralhealth/corald/auth0"
+	"github.com/mycoralhealth/corald/model"
 )
 
-func handleSession(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
-	access_token := r.Header.Get("X-Mycoral-Accesstoken")
+func handleSession(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
+	accessToken := r.Header.Get("X-Mycoral-Accesstoken")
 
-	user_info, err := auth0.Validate(access_token)
+	userInfo, err := auth0.Validate(accessToken)
 	if err == auth0.Unauthorized {
 		handleError(w, r, http.StatusUnauthorized, "")
 		return
@@ -19,8 +21,9 @@ func handleSession(w http.ResponseWriter, r *http.Request, dbCon *sql.DB) {
 		return
 	}
 
-	// TODO: Lookup corresponding user in our database
 	// Create entry if we don't have one
+	var user model.User
+	dbCon.Where(model.User{Name: userInfo.Name}).Assign(model.User{LastLogin: time.Now()}).FirstOrCreate(&user)
 
-	respondWithJSON(w, r, http.StatusOK, user_info)
+	respondWithJSON(w, r, http.StatusOK, userInfo)
 }
