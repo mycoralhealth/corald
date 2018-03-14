@@ -9,21 +9,11 @@ import (
 	"github.com/mycoralhealth/corald/model"
 )
 
-func handleSession(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
-	accessToken := r.Header.Get("X-Mycoral-Accesstoken")
-
-	userInfo, err := auth0.Validate(accessToken)
-	if err == auth0.Unauthorized {
-		handleError(w, r, http.StatusUnauthorized, "")
-		return
-	} else if err != nil {
-		handleError(w, r, http.StatusInternalServerError, err.Error())
-		return
-	}
+func handleSession(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
 
 	// Create entry if we don't have one
 	var user model.User
-	dbCon.Where(model.User{Name: userInfo.Name}).Assign(model.User{LastLogin: time.Now()}).FirstOrCreate(&user)
+	dbCon.Where(model.User{Name: u.Name}).Assign(model.User{LastLogin: time.Now()}).FirstOrCreate(&user)
 
-	respondWithJSON(w, r, http.StatusOK, userInfo)
+	respondWithJSON(w, r, http.StatusOK, u)
 }

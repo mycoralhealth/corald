@@ -5,16 +5,17 @@ import (
 	"strconv"
 
 	"github.com/jinzhu/gorm"
+	"github.com/mycoralhealth/corald/auth0"
 	"github.com/mycoralhealth/corald/model"
 
 	"github.com/gorilla/mux"
 )
 
-func handleGetAllUsers(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
+func handleGetAllUsers(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }
 
-func handleGetUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
+func handleGetUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
 	//FIXME: This should not be a public endpoint
 
 	vars := mux.Vars(r)
@@ -38,14 +39,14 @@ func handleGetUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
 	respondWithJSON(w, r, http.StatusOK, user)
 }
 
-func handleCreateUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
+func handleCreateUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }
 
-func handleDeleteUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
+func handleDeleteUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }
 
-func handleUpdateUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB) {
+func handleUpdateUser(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
 	handleError(w, r, http.StatusNotImplemented, "")
 }

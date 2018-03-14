@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"github.com/mycoralhealth/corald/auth0"
 )
 
 func handleNotFound(w http.ResponseWriter, r *http.Request) {
@@ -37,17 +38,27 @@ func appendSlash(w http.ResponseWriter, r *http.Request) {
 func MakeMuxRouter(dbCon *gorm.DB) http.Handler {
 
 	// Wrapper to add dbCon to handler functions
-	wrap := func(f func(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB)) func(w http.ResponseWriter, r *http.Request) {
+	wrap := func(f func(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo)) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			/*if err := checkLoggedIn(w, r); err != nil {
+			accessToken := r.Header.Get("X-Mycoral-Accesstoken")
+
+			userInfo, err := auth0.Validate(accessToken)
+			if err == auth0.Unauthorized {
+				handleError(w, r, http.StatusUnauthorized, "")
 				return
-			}*/
-			f(w, r, dbCon)
+			} else if err != nil {
+				handleError(w, r, http.StatusInternalServerError, err.Error())
+				return
+			}
+			f(w, r, dbCon, &userInfo)
 		}
 	}
 
 	muxRouter := mux.NewRouter()
 	muxRouter.HandleFunc("/v0/session", wrap(handleSession)).Methods("GET")
+
+	muxRouter.HandleFunc("/v0/ipfs/add", wrap(handleIPFSAdd)).Methods("POST")
+	muxRouter.HandleFunc("/v0/ipfs/cat", wrap(handleIPFSCat)).Methods("GET")
 
 	muxRouter.HandleFunc("/v0/users", appendSlash).Methods("GET")
 	muxRouter.HandleFunc("/v0/users/", wrap(handleGetAllUsers)).Methods("GET")

@@ -5,14 +5,36 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 type UserInfo struct {
-	Sub       string `json:"sub"`
-	Nickname  string `json:"nickname"`
-	Name      string `json:"name"`
-	Picture   string `json:"picture"`
-	UpdatedAt string `json:"updated_at"`
+	ClientID      string
+	CreatedAt     time.Time `json:"created_at"`
+	Email         string
+	EmailVerified bool `json:"email_verified"`
+	Identities    []struct {
+		Connection string
+		IsSocial   bool
+		Provider   string
+		UserId     string `json:"user_id"`
+	}
+	Name      string
+	Nickname  string
+	Picture   string
+	Sub       string
+	UpdatedAt time.Time `json:"updated_at"`
+	UserId    string    `json:"user_id"`
+
+	AppMetadata struct {
+		Admin bool
+	} `json:"app_metadata"`
+
+	UserMetadata map[string]interface{} `json:"user_metadata"`
+}
+
+func (p UserInfo) IsAdmin() bool {
+	return p.AppMetadata.Admin
 }
 
 var Unauthorized error
