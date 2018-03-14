@@ -1,6 +1,8 @@
 package throttle
 
-import "time"
+import (
+	"time"
+)
 
 type Throttle struct {
 	maxBumps  uint64
@@ -23,6 +25,7 @@ func (th *Throttle) Bump(name string) bool {
 	if time.Now().Sub(th.lastReset) > th.period {
 		// Reset the counters
 		th.users = make(map[string]uint64)
+		th.lastReset = time.Now()
 	}
 	if th.users[name] < th.maxBumps {
 		th.users[name]++
