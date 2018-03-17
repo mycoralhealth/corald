@@ -1,7 +1,11 @@
 package web
 
 import (
+	"bytes"
 	"io"
+	"io/ioutil"
+	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,18 +23,46 @@ func init() {
 	addThrottle = throttle.NewThrottle(50, 24*time.Hour)
 }
 
-func copyHeader(dst, src http.Header) {
-	for k, vv := range src {
-		for _, v := range vv {
-			dst.Add(k, v)
-		}
-	}
-}
-
 func generateProxiedURL(u *url.URL) *url.URL {
 	u.Scheme = "http"
 	u.Host = os.Getenv("CORALD_IPFS_API_HOSTNAME") + ":" + os.Getenv("CORALD_IPFS_API_PORT")
+	u.Path = "/api/v0/" + u.Path[9:]
 	return u
+}
+
+func generateProxiedRequest(inReq *http.Request) (*http.Request, error) {
+	// Unpack file from incoming request
+	inFile, inHeader, err := inReq.FormFile("file")
+	if err != nil {
+		return nil, err
+	}
+	defer inFile.Close()
+
+	log.Printf("IPFS add: %s\n", inHeader.Filename)
+
+	// Encode file as multipart
+	var b bytes.Buffer
+	mw := multipart.NewWriter(&b)
+	fw, err := mw.CreateFormFile("file", inHeader.Filename)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = io.Copy(fw, inFile); err != nil {
+		return nil, err
+	}
+	if err = mw.Close(); err != nil {
+		return nil, err
+	}
+
+	// Create an outgoing request
+	url := generateProxiedURL(inReq.URL).String()
+	req, err := http.NewRequest("POST", url, &b)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+
+	return req, nil
 }
 
 func handleIPFSAdd(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
@@ -39,22 +71,44 @@ func handleIPFSAdd(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *au
 		return
 	}
 
-	// Make a POST request to the IPFS server, including the body that we received
-	url := generateProxiedURL(r.URL).String()
-	resp, err := http.Post(url, "text/plain", r.Body)
+	req, err := generateProxiedRequest(r)
+	if err != nil {
+		handleError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Submit the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		handleError(w, r, http.StatusServiceUnavailable, err.Error())
 		return
 	}
 	defer resp.Body.Close()
 
-	// Copy the response from the IPFS server back to our client
-	copyHeader(w.Header(), resp.Header)
+	// If the IPFS server returned an error, log it
+	// and return a generic error to our client
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		bod, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			handleError(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+		handleError(w, r, http.StatusInternalServerError, string(bod))
+		return
+	}
+
 	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, r.Body)
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		handleError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
 }
 
 func handleIPFSCat(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *auth0.UserInfo) {
+	log.Printf("IPFS cat: %s\n", r.URL)
+
 	// Make a GET request to the IPFS Server.
 	url := generateProxiedURL(r.URL).String()
 	resp, err := http.Get(url)
@@ -64,8 +118,22 @@ func handleIPFSCat(w http.ResponseWriter, r *http.Request, dbCon *gorm.DB, u *au
 	}
 	defer resp.Body.Close()
 
-	// Copy the response from the IPFS server back to our client
-	copyHeader(w.Header(), resp.Header)
+	// If the IPFS server returned an error, log it
+	// and return a generic error to our client
+	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
+		bod, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			handleError(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+		handleError(w, r, http.StatusInternalServerError, string(bod))
+		return
+	}
+
 	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, r.Body)
+	_, err = io.Copy(w, resp.Body)
+	if err != nil {
+		handleError(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
 }

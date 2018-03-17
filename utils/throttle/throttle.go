@@ -1,6 +1,7 @@
 package throttle
 
 import (
+	"log"
 	"time"
 )
 
@@ -27,8 +28,9 @@ func (th *Throttle) Bump(name string) bool {
 		th.users = make(map[string]uint64)
 		th.lastReset = time.Now()
 	}
-	if th.users[name] < th.maxBumps {
-		th.users[name]++
+	th.users[name]++
+	log.Printf("Throttle: %s is now at %d", name, th.users[name])
+	if th.users[name] <= th.maxBumps {
 		return true
 	}
 

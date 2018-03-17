@@ -58,15 +58,19 @@ func MakeMuxRouter(dbCon *gorm.DB) http.Handler {
 	muxRouter.HandleFunc("/v0/session", wrap(handleSession)).Methods("GET")
 
 	muxRouter.HandleFunc("/v0/ipfs/add", wrap(handleIPFSAdd)).Methods("POST")
-	muxRouter.HandleFunc("/v0/ipfs/cat", wrap(handleIPFSCat)).Methods("GET")
+	muxRouter.HandleFunc("/v0/ipfs/cat/{any:.*}", wrap(handleIPFSCat)).Methods("GET")
 
-	muxRouter.HandleFunc("/v0/users", appendSlash).Methods("GET")
-	muxRouter.HandleFunc("/v0/users/", wrap(handleGetAllUsers)).Methods("GET")
-	muxRouter.HandleFunc("/v0/users/", wrap(handleCreateUser)).Methods("POST")
-	muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleGetUser)).Methods("GET")
-	muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleUpdateUser)).Methods("PUT")
-	muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleDeleteUser)).Methods("DELETE")
-	muxRouter.HandleFunc("/{any:.*}", handleNotFound)
+	/*
+		* Currently unused
+		muxRouter.HandleFunc("/v0/users", appendSlash).Methods("GET")
+		muxRouter.HandleFunc("/v0/users/", wrap(handleGetAllUsers)).Methods("GET")
+		muxRouter.HandleFunc("/v0/users/", wrap(handleCreateUser)).Methods("POST")
+		muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleGetUser)).Methods("GET")
+		muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleUpdateUser)).Methods("PUT")
+		muxRouter.HandleFunc("/v0/users/{userid}", wrap(handleDeleteUser)).Methods("DELETE")
+		muxRouter.HandleFunc("/{any:.*}", handleNotFound)
+	*/
+
 	return muxRouter
 }
 
