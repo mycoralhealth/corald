@@ -9,25 +9,25 @@ import (
 )
 
 type UserInfo struct {
-	ClientID      string
+	ClientID      string    `json:"client_id"`
 	CreatedAt     time.Time `json:"created_at"`
-	Email         string
-	EmailVerified bool `json:"email_verified"`
+	Email         string    `json:"email"`
+	EmailVerified bool      `json:"email_verified"`
 	Identities    []struct {
-		Connection string
-		IsSocial   bool
-		Provider   string
-		UserId     string `json:"user_id"`
+		Connection string `json:"connection"`
+		IsSocial   bool   `json:"isSocial"`
+		Provider   string `json:"provider"`
+		UserID     string `json:"user_id"`
 	}
-	Name      string
-	Nickname  string
-	Picture   string
-	Sub       string
+	Name      string    `json:"name"`
+	Nickname  string    `json:"nickname"`
+	Picture   string    `json:"picture"`
+	Sub       string    `json:"sub"`
 	UpdatedAt time.Time `json:"updated_at"`
-	UserId    string    `json:"user_id"`
+	UserID    string    `json:"user_id"`
 
 	AppMetadata struct {
-		Admin bool
+		Admin bool `json:"admin"`
 	} `json:"app_metadata"`
 
 	UserMetadata map[string]interface{} `json:"user_metadata"`
@@ -43,8 +43,8 @@ func init() {
 	Unauthorized = fmt.Errorf("Unauthorized")
 }
 
-func Validate(access_token string) (UserInfo, error) {
-	url := os.Getenv("CORALD_AUTH0_DOMAIN") + "/userinfo?access_token=" + access_token
+func Validate(accessToken string) (UserInfo, error) {
+	url := os.Getenv("CORALD_AUTH0_DOMAIN") + "/userinfo?access_token=" + accessToken
 	resp, err := http.Get(url)
 	if err != nil {
 		return UserInfo{}, err
