@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// UserInfo stores the response from Auth0's userinfo endpoint
+// https://auth0.com/docs/api/authentication#get-user-info
 type UserInfo struct {
 	ClientID      string    `json:"client_id"`
 	CreatedAt     time.Time `json:"created_at"`
@@ -18,7 +20,7 @@ type UserInfo struct {
 		IsSocial   bool   `json:"isSocial"`
 		Provider   string `json:"provider"`
 		UserID     string `json:"user_id"`
-	}
+	} `json:"identities"`
 	Name      string    `json:"name"`
 	Nickname  string    `json:"nickname"`
 	Picture   string    `json:"picture"`
@@ -33,16 +35,22 @@ type UserInfo struct {
 	UserMetadata map[string]interface{} `json:"user_metadata"`
 }
 
+// IsAdmin returns true if the account has the Admin flag set
+// to `true` in the Auth0 app metadata.
 func (p UserInfo) IsAdmin() bool {
 	return p.AppMetadata.Admin
 }
 
+// Unauthorized is an error value to represent 401 Unauthorized response from Auth0
 var Unauthorized error
 
 func init() {
 	Unauthorized = fmt.Errorf("Unauthorized")
 }
 
+// Validate validates the given accessToken by making a request to Auth0.
+// If it is invalid, it returns Unauthorized error.
+// If it is valid, it returns the user's UserInfo.
 func Validate(accessToken string) (UserInfo, error) {
 	url := os.Getenv("CORALD_AUTH0_DOMAIN") + "/userinfo?access_token=" + accessToken
 	resp, err := http.Get(url)
